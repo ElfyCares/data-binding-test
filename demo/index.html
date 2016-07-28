@@ -2,15 +2,61 @@
 <html>
   <head>
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script type="text/javascript" src="../../../node_modules/js-data/dist/js-data.js"></script>
+    <script type="text/javascript" src="../../../node_modules/js-data-http/dist/js-data-http.js"></script>
+    <script type="text/javascript" src="../../requirejs/require.js"></script>
     <script>
-      /*
-      window.Polymer = window.Polymer || {};
-      window.Polymer.dom = 'shadow';
-      */
+    App = {}
+    require(['../../../node_modules/js-data/dist/js-data.js', '../../../node_modules/js-data-http/dist/js-data-http.js'], function() {
+      var store = App.store = new JSData.DataStore()
+      var httpAdapter = App.httpAdapter = new JSDataHttp.HttpAdapter({
+        basePath: '/api',
+        httpConfig: {
+          baseURL: 'http://localhost:8000',
+        },
+        forceTrailingSlash: true,
+      });
+      store.registerAdapter('http', httpAdapter, { default: true });
+      App.Token = store.defineResource({
+        name: 'token',
+        endpoint: 'auth/token',
+        login(username, password) {
+          return httpAdapter.POST('api/auth/token/', {username: username, password: password})
+            .then(function(response) {
+              this._authToken = response.data.token
+            }.bind(this))
+        },
+      })
+
+      App.User = store.defineResource({
+        name: 'user',
+        endpoint: 'auth/me/'
+      });
+      App.CareRecipient = store.defineMapper('care_recipients', {
+        // name: 'care_recipients',
+        endpoint: 'care_recipients/',
+        schema: {
+          properties: {
+            first_name: { type: 'string', track: true },
+            last_name: { type: 'string', track: true }
+          }
+        }
+      })
+
+      App.registerListener = function(element, model, basePath) {
+        model.on('change', function(element, basePath, record, changeSet) {
+          Object.keys(changeSet.added).forEach(function(element, basePath, key) {
+            element.notifyPath(basePath + '.' + key)
+          }.bind(null, element, basePath))
+        }.bind(null, element, basePath))
+      }
+    })
     </script>
     <link rel="import" href="icon-toggle-demo.html">
+    <link rel="import" href="care-recipients.html">
   </head>
   <body>
+    <care-recipients></care-recipients>
     <icon-toggle-demo></icon-toggle-demo>
   </body>
 </html>

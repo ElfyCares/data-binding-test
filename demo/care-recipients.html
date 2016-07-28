@@ -1,0 +1,37 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../paper-input/paper-input.html">
+<link rel="import" href="../../paper-button/paper-button.html">
+<dom-module id="care-recipients">
+  <template>
+    <paper-input value={{careRecipient.first_name}}></paper-input>
+    <paper-input value={{careRecipient.last_name}}></paper-input>
+    <p>[[careRecipient.birth_date]]</p>
+    <paper-button on-tap="save">Save</paper-button>
+  </template>
+
+  <script>
+  Polymer({
+    is: 'care-recipients',
+    properties: {
+      careRecipient: {
+        type: Object,
+        notify: true,
+      }
+    },
+    attached() {
+      App.Token.login('aa@aa.com', 'elfy1234').then(function() {
+        App.httpAdapter.httpConfig = {baseURL: 'http://localhost:8000', headers: {common: { AUTHORIZATION: 'Token ' + App.Token._authToken}}}
+        App.CareRecipient.find(1).then(function(careRecipient) {
+          this.careRecipient = careRecipient
+          App.registerListener(this, careRecipient, 'careRecipient')
+        }.bind(this))
+      }.bind(this))
+    },
+    save() {
+      this.careRecipient.save()
+    }
+  });
+  </script>
+
+</dom-module>
+
