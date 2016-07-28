@@ -23,9 +23,12 @@
         App.httpAdapter.httpConfig = {baseURL: 'http://localhost:8000', headers: {common: { AUTHORIZATION: 'Token ' + App.Token._authToken}}}
         App.CareRecipient.find(1).then(function(careRecipient) {
           this.careRecipient = careRecipient
-          App.registerListener(this, careRecipient, 'careRecipient')
+          this._handler = App.registerNotify(this, careRecipient, 'careRecipient')
         }.bind(this))
       }.bind(this))
+    },
+    dettached() {
+      App.unRegisterNotify(this.careRecipient, this._handler)
     },
     save() {
       this.careRecipient.save()

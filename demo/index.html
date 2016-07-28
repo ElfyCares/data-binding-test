@@ -43,12 +43,18 @@
         }
       })
 
-      App.registerListener = function(element, model, basePath) {
-        model.on('change', function(element, basePath, record, changeSet) {
+      App.registerNotify = function(element, model, basePath) {
+        var handler = function(element, basePath, record, changeSet) {
           Object.keys(changeSet.added).forEach(function(element, basePath, key) {
             element.notifyPath(basePath + '.' + key)
           }.bind(null, element, basePath))
-        }.bind(null, element, basePath))
+        }.bind(null, element, basePath)
+        model.on('change', handler)
+        return handler;
+      }
+
+      App.unRegisterNotify = function(model, handler) {
+        model.off('change', handler)
       }
     })
     </script>
